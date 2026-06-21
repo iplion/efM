@@ -1,0 +1,36 @@
+databaseChangeLog:
+  - changeSet:
+      id: 007-seed-data
+      author: iplion
+      contextFilter: "@dev"
+      changes:
+#        login/pass: admin/admin, user/user
+        - sql:
+            sql: >
+              INSERT INTO users (
+                  login,
+                  password,
+                  full_name,
+                  role_id,
+                  enabled
+              ) VALUES (
+                  'admin',
+                  '$2b$12$Ch7dU1/Rov0N2Wof8xgZjeHwpB9LbGWZIbrGqZ3stF5CNqxF9YzR6',
+                  'Administrator',
+                  (SELECT id FROM roles WHERE name = 'ADMIN'),
+                  TRUE
+              );
+
+              INSERT INTO users (
+                  login,
+                  password,
+                  full_name,
+                  role_id,
+                  enabled
+              ) VALUES (
+                  'user',
+                  '$2b$12$KTzbHHN4EM8.kU.p7.rmbu2pycdZTIqhpZTq.3JSjmgA0kLj6.qmG',
+                  'Customer',
+                  (SELECT id FROM roles WHERE name = 'USER'),
+                  TRUE
+              );

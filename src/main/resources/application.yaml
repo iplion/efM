@@ -1,3 +1,6 @@
+server:
+  port: 8080
+
 spring:
   application:
     name: cards
@@ -16,6 +19,7 @@ spring:
       ddl-auto: validate
   liquibase:
     change-log: classpath:db/migration/changelog-master.yaml
+    contexts: dev
 
 springdoc:
   swagger-ui:
@@ -27,3 +31,10 @@ logging:
   level:
     org.hibernate.SQL: debug
     org.hibernate.orm.jdbc.bind: trace
+
+app:
+  security:
+    card-encryption-key: ${CARD_ENCRYPTION_KEY:0123456789ABCDEF0123456789ABCDEF}
+    card-hmac-key: ${CARD_HMAC_KEY:0123456789ABCDEF0123456789ABCDEF}
+    jwt-access-secret: ${JWT_SECRET:0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF}
+    jwt-access-ttl: 1h
