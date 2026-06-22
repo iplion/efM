@@ -57,12 +57,10 @@ databaseChangeLog:
                     nullable: false
 
               - column:
-                  name: status_id
-                  type: INT
+                  name: status
+                  type: VARCHAR(20)
                   constraints:
                     nullable: false
-                    foreignKeyName: fk_cards_status
-                    references: card_statuses(id)
 
               - column:
                   name: balance
@@ -98,6 +96,12 @@ databaseChangeLog:
               ADD CONSTRAINT chk_cards_last_four_digits
               CHECK (last_four_digits ~ '^[0-9]{4}$');
 
+        - sql:
+            sql: >
+              ALTER TABLE cards
+              ADD CONSTRAINT chk_cards_status
+              CHECK (status IN ('ACTIVE', 'BLOCKED', 'EXPIRED'));
+
         - createIndex:
             tableName: cards
             indexName: idx_cards_owner_id
@@ -110,4 +114,4 @@ databaseChangeLog:
             indexName: idx_cards_status
             columns:
               - column:
-                  name: status_id
+                  name: status

@@ -1,7 +1,10 @@
 package com.efmbank.cards.entity;
 
+import com.efmbank.cards.model.CardStatus;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -53,12 +56,18 @@ public class Card {
     @Column(name = "expiration_date", nullable = false)
     private LocalDate expirationDate;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "status_id", nullable = false)
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false, length = 20)
     private CardStatus status;
 
     @Column(name = "balance", nullable = false, precision = 19, scale = 2)
     private BigDecimal balance;
+
+    @Column(name = "deleted", nullable = false)
+    private boolean deleted = false;
+
+    @Column(name = "deleted_at")
+    private Instant deletedAt;
 
     @Column(name = "created_at", nullable = false, insertable = false, updatable = false)
     private Instant createdAt;

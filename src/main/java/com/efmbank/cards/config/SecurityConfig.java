@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -26,6 +27,7 @@ import java.util.List;
 
 @Configuration
 @RequiredArgsConstructor
+@EnableMethodSecurity
 public class SecurityConfig {
 
     @Bean
@@ -44,7 +46,8 @@ public class SecurityConfig {
                         "/api/v1/auth/login",
                         "/swagger-ui/**",
                         "/swagger-ui.html",
-                        "/v3/api-docs/**"
+                        "/v3/api-docs/**",
+                        "/v3/api-docs.yaml"
                     ).permitAll()
                     .anyRequest().authenticated())
             .oauth2ResourceServer(oauth2 ->
@@ -58,6 +61,9 @@ public class SecurityConfig {
     private Converter<Jwt, JwtAuthenticationToken> jwtAuthenticationConverter() {
         return jwt -> {
             String role = jwt.getClaimAsString("role");
+            if (role == null) {
+                return new JwtAuthenticationToken(jwt, List.of(), jwt.getSubject());
+            }
 
             Collection<GrantedAuthority> authorities = List.of(
                 new SimpleGrantedAuthority("ROLE_" + role)

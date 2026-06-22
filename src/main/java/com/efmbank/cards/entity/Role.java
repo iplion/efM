@@ -1,5 +1,6 @@
 package com.efmbank.cards.entity;
 
+import com.efmbank.cards.model.UserRole;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -25,5 +26,5 @@ public class Role {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "name", nullable = false, unique = true, length = 10)
-    private com.efmbank.cards.model.Role name;
+    private UserRole name;
 }

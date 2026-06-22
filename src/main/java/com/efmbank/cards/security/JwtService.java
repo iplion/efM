@@ -4,6 +4,8 @@ import com.efmbank.cards.config.AppSecurityProperties;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
+import org.springframework.security.oauth2.jwt.JwsHeader;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
@@ -39,8 +41,10 @@ public class JwtService {
             .claim("role", roles.get(0))
             .build();
 
+        JwsHeader jwsHeader = JwsHeader.with(MacAlgorithm.HS256).build();
+
         return jwtEncoder
-            .encode(JwtEncoderParameters.from(claims))
+            .encode(JwtEncoderParameters.from(jwsHeader, claims))
             .getTokenValue();
     }
 }

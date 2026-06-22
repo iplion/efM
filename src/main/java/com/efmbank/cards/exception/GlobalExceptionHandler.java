@@ -37,7 +37,7 @@ public class GlobalExceptionHandler {
             log.warn(e.getMessage());
         }
 
-        return problemDetail(e.getHttpStatus(), e.getClientMessage(), request);
+        return problemDetail(e.getHttpStatus(), e.getMessage(), request);
     }
 
     // === 400: bad JSON ===

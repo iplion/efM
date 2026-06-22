@@ -1,0 +1,667 @@
+openapi: 3.0.3
+info:
+  title: Cards API
+  version: 1.0.0
+  description: API системы управления банковскими картами.
+servers:
+  - url: http://localhost:8080
+security:
+  - bearerAuth: []
+tags:
+  - name: Auth
+  - name: Admin Users
+  - name: Admin Cards
+  - name: Cards
+  - name: Transfers
+  - name: Card Block Requests
+paths:
+  /api/v1/auth/login:
+    post:
+      tags: [Auth]
+      security: []
+      summary: Login and get JWT
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: JWT token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/v1/admin/users:
+    post:
+      tags: [Admin Users]
+      summary: Create user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCreateRequest'
+      responses:
+        '200':
+          description: Created user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+    get:
+      tags: [Admin Users]
+      summary: List users
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
+        - $ref: '#/components/parameters/Sort'
+      responses:
+        '200':
+          description: Page of users
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPage'
+
+  /api/v1/admin/users/{id}:
+    get:
+      tags: [Admin Users]
+      summary: Get user
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+      responses:
+        '200':
+          description: User
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags: [Admin Users]
+      summary: Update user
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserUpdateRequest'
+      responses:
+        '200':
+          description: Updated user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+
+  /api/v1/admin/users/{id}/enable:
+    patch:
+      tags: [Admin Users]
+      summary: Enable user
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+      responses:
+        '200':
+          description: Enabled user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+
+  /api/v1/admin/users/{id}/disable:
+    patch:
+      tags: [Admin Users]
+      summary: Disable user
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+      responses:
+        '200':
+          description: Disabled user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+
+  /api/v1/admin/cards:
+    post:
+      tags: [Admin Cards]
+      summary: Create card
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CardCreateRequest'
+      responses:
+        '200':
+          description: Created card
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CardResponse'
+    get:
+      tags: [Admin Cards]
+      summary: List all cards
+      parameters:
+        - name: ownerId
+          in: query
+          schema:
+            type: integer
+            format: int64
+        - name: status
+          in: query
+          schema:
+            $ref: '#/components/schemas/CardStatus'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
+        - $ref: '#/components/parameters/Sort'
+      responses:
+        '200':
+          description: Page of cards
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CardPage'
+
+  /api/v1/admin/cards/{publicId}:
+    get:
+      tags: [Admin Cards]
+      summary: Get card
+      parameters:
+        - $ref: '#/components/parameters/CardPublicId'
+      responses:
+        '200':
+          description: Card
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CardResponse'
+    put:
+      tags: [Admin Cards]
+      summary: Update card
+      parameters:
+        - $ref: '#/components/parameters/CardPublicId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CardUpdateRequest'
+      responses:
+        '200':
+          description: Updated card
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CardResponse'
+    delete:
+      tags: [Admin Cards]
+      summary: Soft-delete card
+      parameters:
+        - $ref: '#/components/parameters/CardPublicId'
+      responses:
+        '200':
+          description: Card removed from active card lists; financial history remains stored
+
+  /api/v1/admin/cards/{publicId}/activate:
+    patch:
+      tags: [Admin Cards]
+      summary: Activate card
+      parameters:
+        - $ref: '#/components/parameters/CardPublicId'
+      responses:
+        '200':
+          description: Activated card
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CardResponse'
+
+  /api/v1/admin/cards/{publicId}/block:
+    patch:
+      tags: [Admin Cards]
+      summary: Block card
+      parameters:
+        - $ref: '#/components/parameters/CardPublicId'
+      responses:
+        '200':
+          description: Blocked card
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CardResponse'
+
+  /api/v1/cards:
+    get:
+      tags: [Cards]
+      summary: List own cards
+      parameters:
+        - name: status
+          in: query
+          schema:
+            $ref: '#/components/schemas/CardStatus'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
+        - $ref: '#/components/parameters/Sort'
+      responses:
+        '200':
+          description: Page of own cards
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CardPage'
+
+  /api/v1/cards/{publicId}:
+    get:
+      tags: [Cards]
+      summary: Get own card
+      parameters:
+        - $ref: '#/components/parameters/CardPublicId'
+      responses:
+        '200':
+          description: Card
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CardResponse'
+
+  /api/v1/cards/{publicId}/balance:
+    get:
+      tags: [Cards]
+      summary: Get own card balance
+      parameters:
+        - $ref: '#/components/parameters/CardPublicId'
+      responses:
+        '200':
+          description: Balance
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CardBalanceResponse'
+
+  /api/v1/transfers:
+    post:
+      tags: [Transfers]
+      summary: Transfer money between own cards
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransferCreateRequest'
+      responses:
+        '200':
+          description: Transfer result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransferResponse'
+    get:
+      tags: [Transfers]
+      summary: List own transfers
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
+        - $ref: '#/components/parameters/Sort'
+      responses:
+        '200':
+          description: Page of transfers
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransferPage'
+
+  /api/v1/card-block-requests/cards/{cardPublicId}:
+    post:
+      tags: [Card Block Requests]
+      summary: Request card block
+      parameters:
+        - name: cardPublicId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Created block request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CardBlockRequestResponse'
+
+  /api/v1/card-block-requests/my:
+    get:
+      tags: [Card Block Requests]
+      summary: List own block requests
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
+        - $ref: '#/components/parameters/Sort'
+      responses:
+        '200':
+          description: Page of block requests
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CardBlockRequestPage'
+
+  /api/v1/card-block-requests/requested:
+    get:
+      tags: [Card Block Requests]
+      summary: List requested block requests
+      responses:
+        '200':
+          description: Page of block requests
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CardBlockRequestPage'
+
+  /api/v1/card-block-requests/{requestId}/approve:
+    patch:
+      tags: [Card Block Requests]
+      summary: Approve block request
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+      responses:
+        '200':
+          description: Approved block request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CardBlockRequestResponse'
+
+  /api/v1/card-block-requests/{requestId}/reject:
+    patch:
+      tags: [Card Block Requests]
+      summary: Reject block request
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+      responses:
+        '200':
+          description: Rejected block request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CardBlockRequestResponse'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    Page:
+      name: page
+      in: query
+      schema:
+        type: integer
+        minimum: 0
+    Size:
+      name: size
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+    Sort:
+      name: sort
+      in: query
+      schema:
+        type: string
+    UserId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+    RequestId:
+      name: requestId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+    CardPublicId:
+      name: publicId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+    Unauthorized:
+      description: Unauthorized
+    Forbidden:
+      description: Forbidden
+    NotFound:
+      description: Not found
+  schemas:
+    LoginRequest:
+      type: object
+      required: [login, password]
+      properties:
+        login:
+          type: string
+          maxLength: 30
+        password:
+          type: string
+          writeOnly: true
+    LoginResponse:
+      type: object
+      properties:
+        jwtToken:
+          type: string
+    UserCreateRequest:
+      type: object
+      required: [login, password, fullName, role]
+      properties:
+        login:
+          type: string
+        password:
+          type: string
+          writeOnly: true
+        fullName:
+          type: string
+        role:
+          $ref: '#/components/schemas/Role'
+        enabled:
+          type: boolean
+    UserUpdateRequest:
+      type: object
+      required: [fullName, role]
+      properties:
+        fullName:
+          type: string
+        role:
+          $ref: '#/components/schemas/Role'
+        enabled:
+          type: boolean
+    UserResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        login:
+          type: string
+        fullName:
+          type: string
+        role:
+          $ref: '#/components/schemas/Role'
+        enabled:
+          type: boolean
+    CardCreateRequest:
+      type: object
+      required: [ownerId, cardNumber, expirationDate, balance]
+      properties:
+        ownerId:
+          type: integer
+          format: int64
+        cardNumber:
+          type: string
+          pattern: '^\d{16,19}$'
+        expirationDate:
+          type: string
+          format: date
+        balance:
+          type: number
+    CardUpdateRequest:
+      type: object
+      required: [expirationDate, status, balance]
+      properties:
+        expirationDate:
+          type: string
+          format: date
+        status:
+          $ref: '#/components/schemas/CardStatus'
+        balance:
+          type: number
+    CardResponse:
+      type: object
+      properties:
+        publicId:
+          type: string
+          format: uuid
+        ownerId:
+          type: integer
+          format: int64
+        ownerLogin:
+          type: string
+        maskedNumber:
+          type: string
+          example: "**** **** **** 1234"
+        expirationDate:
+          type: string
+          format: date
+        status:
+          $ref: '#/components/schemas/CardStatus'
+        balance:
+          type: number
+    CardBalanceResponse:
+      type: object
+      properties:
+        cardId:
+          type: string
+          format: uuid
+        balance:
+          type: number
+    TransferCreateRequest:
+      type: object
+      required: [publicId, sourceCardId, targetCardId, amount]
+      properties:
+        transferPublicId:
+          type: string
+          format: uuid
+          description: Idempotency key for transfer request.
+        sourceCardId:
+          type: string
+          format: uuid
+        targetCardId:
+          type: string
+          format: uuid
+        amount:
+          type: number
+          minimum: 0.01
+    TransferResponse:
+      type: object
+      properties:
+        publicId:
+          type: string
+          format: uuid
+        sourceCardId:
+          type: string
+          format: uuid
+        targetCardId:
+          type: string
+          format: uuid
+        amount:
+          type: number
+        status:
+          $ref: '#/components/schemas/TransferStatus'
+    CardBlockRequestResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        cardPublicId:
+          type: string
+          format: uuid
+        maskedCardNumber:
+          type: string
+          example: "**** **** **** 1234"
+        status:
+          $ref: '#/components/schemas/BlockRequestStatus'
+    UserPage:
+      allOf:
+        - $ref: '#/components/schemas/Page'
+    CardPage:
+      allOf:
+        - $ref: '#/components/schemas/Page'
+    TransferPage:
+      allOf:
+        - $ref: '#/components/schemas/Page'
+    CardBlockRequestPage:
+      allOf:
+        - $ref: '#/components/schemas/Page'
+    Page:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            type: object
+        totalElements:
+          type: integer
+        totalPages:
+          type: integer
+        size:
+          type: integer
+        number:
+          type: integer
+    ProblemDetail:
+      type: object
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+        instance:
+          type: string
+    Role:
+      type: string
+      enum: [ADMIN, USER]
+    CardStatus:
+      type: string
+      enum: [ACTIVE, BLOCKED, EXPIRED]
+    BlockRequestStatus:
+      type: string
+      enum: [REQUESTED, APPROVED, REJECTED]
+    TransferStatus:
+      type: string
+      enum: [COMPLETED, REJECTED]

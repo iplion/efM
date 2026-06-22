@@ -1,6 +1,6 @@
 package com.efmbank.cards.model;
 
-public enum Role {
+public enum UserRole {
     ADMIN,
     USER
 }
